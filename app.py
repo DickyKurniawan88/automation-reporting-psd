@@ -299,7 +299,7 @@ with col_kanan:
         st.stop()
 
 with st.sidebar:
-    img_path = os.path.join("image", "Logoperusahaan.PNG")
+    img_path = os.path.join("image", "Logoperusahaan.png")
     try:
         st.markdown(f'<a href="https://www.ilcs.co.id/" target="_blank"><img src="data:image/png;base64,{image_to_base64(img_path)}" style="width:100%; border-radius:8px;" draggable="false"></a><br><br>', unsafe_allow_html=True)
     except: pass
