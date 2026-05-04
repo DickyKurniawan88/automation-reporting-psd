@@ -417,12 +417,19 @@ with col_kiri:
         status_text = st.status("Menyiapkan Sistem Playwright...", expanded=True)
         
         try:
-            temp_parent = tempfile.mkdtemp()
+            # GANTI tempfile JADI FOLDER STATIS 
+            temp_parent = os.path.join(os.getcwd(), "FOLDER_HASIL_SEMENTARA")
+            os.makedirs(temp_parent, exist_ok=True)
+            
             st.session_state.temp_parent_dir = temp_parent
             base_output_dir = os.path.join(temp_parent, root_name_zip)
             st.session_state.base_output_dir = base_output_dir
             os.makedirs(base_output_dir, exist_ok=True)
-            st.session_state.hasil_capture = [] 
+            
+            # CEK APAKAH INI RUN BARU ATAU LANJUTAN
+            # Kalau list hasil_capture kosong, berarti baru mulai atau baru kerestart
+            if 'hasil_capture' not in st.session_state or not st.session_state.hasil_capture:
+                 st.session_state.hasil_capture = []
 
             with sync_playwright() as p:
                 browser = p.chromium.launch_persistent_context(
