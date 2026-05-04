@@ -1,10 +1,3 @@
-Ini dia draf `README.md` yang rapi, profesional, dan informatif. Format ini udah disesuaikan biar Mas Ade, Bang Fendy, atau tim IT lainnya gampang paham cara kerja dan cara *setup* aplikasinya di server *private*.
-
-Kamu tinggal *copy* teks di bawah ini dan *paste* ke file `README.md` di GitHub kamu.
-
-***
-
-```markdown
 # 🤖 Automation Reporting Grafana (ILCS)
 
 Aplikasi berbasis web (*Streamlit*) yang berfungsi untuk mengotomatisasi proses *capture* (tangkapan layar) dashboard monitoring Grafana di lingkungan ILCS. Dibangun dengan **Playwright** sebagai *engine* utama untuk memastikan hasil *capture* yang stabil, presisi, dan bebas dari panel yang masih *loading* atau "No Data".
