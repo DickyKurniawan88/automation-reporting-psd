@@ -465,6 +465,14 @@ with col_kiri:
                             raise Exception("Koneksi Internet Terputus! Proses dibatalkan untuk mencegah error massal.")
                             
                         label = config['label']
+
+                        filename_cek = os.path.join(target_dir, f"{label}.png")
+                        if os.path.exists(filename_cek):
+                            status_text.write(f"⏩ [{tugas_berjalan+1}/{total_tugas_asli}] Skip: **{nama_dash}** ({label}) - Sudah tercapture!")
+                            tugas_berjalan += 1
+                            progress_bar.progress(tugas_berjalan / total_tugas_asli)
+                            continue # Langsung lompat ke dashboard selanjutnya!
+                        
                         status_text.write(f"⏳ [{tugas_berjalan+1}/{total_tugas_asli}] Memproses: **{nama_dash}** ({label}) ...")
                         update_ui_progress(waktu_mulai, tugas_berjalan, total_tugas_asli, info_waktu_ui)
                         
