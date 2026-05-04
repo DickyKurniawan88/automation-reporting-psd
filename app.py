@@ -250,7 +250,7 @@ if 'temp_parent_dir' not in st.session_state:
 #  SISTEM LOGIN MENGGUNAKAN FORM
 # ==========================================
 if not st.session_state.logged_in:
-    # injeksi css khusus untuk mengunci layar login (no scroll)
+    # injeksi css khusus untuk mengunci layar login (no scroll) + animasi imut
     st.markdown("""
         <style>
         /* kunci mentok html dan body */
@@ -261,7 +261,7 @@ if not st.session_state.logged_in:
             padding: 0 !important;
         }
         
-        /* kunci wadah aplikasi utama streamlit (pake flag 'i' biar case-insensitive) */
+        /* kunci wadah aplikasi utama streamlit */
         div[data-testid="stappviewcontainer" i], 
         div[data-testid="stmain" i], 
         div[data-testid="stappviewblockcontainer" i] {
@@ -269,18 +269,34 @@ if not st.session_state.logged_in:
             height: 100vh !important;
         }
         
-        /* sembunyikan header kosong bawaan streamlit biar makin rapi */
+        /* sembunyikan header kosong bawaan streamlit */
         header {
             display: none !important;
+        }
+        
+        /* --- CSS ANIMASI IMUT --- */
+        @keyframes ngambang {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .robot-imut {
+            font-size: 70px;
+            text-align: center;
+            display: block;
+            animation: ngambang 3s ease-in-out infinite;
+            margin-bottom: -15px;
         }
         </style>
     """, unsafe_allow_html=1)
 
-    st.markdown("<br><br><br>", unsafe_allow_html=True)
+    st.markdown("<br><br>", unsafe_allow_html=True)
     _, col_login, _ = st.columns([1.5, 2, 1.5])
     
     with col_login:
-        st.title("🔒 Login Sistem")
+        # Panggil class animasi robotnya di sini
+        st.markdown('<div class="robot-imut">🤖</div>', unsafe_allow_html=1)
+        st.markdown('<h1 style="text-align: center;">Login Sistem</h1>', unsafe_allow_html=1)
         st.info("Silakan masukkan Kredensial untuk mengakses Automation Reporting.")
         
         with st.form("form_login"):
@@ -295,8 +311,7 @@ if not st.session_state.logged_in:
                 else:
                     st.error("❌ Username atau Password salah!")
     
-    st.stop()
-# ==========================================
+    st.stop()# ==========================================
 #  KODE UI UTAMA (SETELAH LOGIN BERHASIL)
 # ==========================================
 tampilkan_tombol_wa()
