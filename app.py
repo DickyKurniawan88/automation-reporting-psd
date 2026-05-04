@@ -1,3 +1,4 @@
+import json
 import asyncio
 import sys
 import streamlit as st
@@ -414,8 +415,8 @@ with col_kiri:
         with c1:
             if st.button("❌ Batal", width="stretch"):
                 st.session_state.status_aplikasi = "idle"; st.rerun()
-
-    elif st.session_state.status_aplikasi == "running":
+#-----------------------------------------------------------------------------------
+     elif st.session_state.status_aplikasi == "running":
         st.title("🤖 Robot Sedang Bekerja...")
         st.info("💡 **Engine:** Playwright Auto-Wait dengan Tab Management Memory Safe.")
         if st.button("🔄 Layar Nyangkut? Klik Disini (Reset)", width="stretch"):
@@ -427,7 +428,6 @@ with col_kiri:
         status_text = st.status("Menyiapkan Sistem Playwright...", expanded=True)
         
         try:
-            # GANTI tempfile JADI FOLDER STATIS 
             temp_parent = os.path.join(os.getcwd(), "FOLDER_HASIL_SEMENTARA")
             os.makedirs(temp_parent, exist_ok=True)
             
@@ -436,10 +436,18 @@ with col_kiri:
             st.session_state.base_output_dir = base_output_dir
             os.makedirs(base_output_dir, exist_ok=True)
             
+            # ---> [DITAMBAHKAN] Deklarasi letak file JSON untuk menyimpan memori
+            log_file = os.path.join(temp_parent, "log_status.json")
+            
             # CEK APAKAH INI RUN BARU ATAU LANJUTAN
-            # Kalau list hasil_capture kosong, berarti baru mulai atau baru kerestart
             if 'hasil_capture' not in st.session_state or not st.session_state.hasil_capture:
-                 st.session_state.hasil_capture = []
+                # ---> [DIRUBAH] Kalau list kosong, robot disuruh baca file JSON dulu. 
+                # Kalau JSON-nya ada, masukin isinya ke memori. Kalau gak ada, bikin list kosong.
+                if os.path.exists(log_file):
+                    with open(log_file, "r") as f:
+                        st.session_state.hasil_capture = json.load(f)
+                else:
+                    st.session_state.hasil_capture = []
 
             with sync_playwright() as p:
                 browser = p.chromium.launch_persistent_context(
@@ -484,8 +492,24 @@ with col_kiri:
                         label = config['label']
 
                         filename_cek = os.path.join(target_dir, f"{label}.png")
+                        
                         if os.path.exists(filename_cek):
-                            status_text.write(f"⏩ [{tugas_berjalan+1}/{total_tugas_asli}] Skip: **{nama_dash}** ({label}) - Sudah tercapture!")
+                            # ---> [DITAMBAHKAN] Cek status No Data dari JSON memory pas proses nge-skip
+                            ada_no_data = any(item['path'] == filename_cek and item['ada_no_data'] for item in st.session_state.hasil_capture)
+                            tanda_nodata = "⚠️ NO DATA" if ada_no_data else "✅"
+                            
+                            # ---> [DIRUBAH] UI nampilin info apakah gambar yang di-skip ini No Data atau nggak
+                            status_text.write(f"⏩ [{tugas_berjalan+1}/{total_tugas_asli}] Skip: **{nama_dash}** ({label}) - {tanda_nodata}")
+                            
+                            # ---> [DITAMBAHKAN] Mencegah bug data ilang. Pastikan gambar yg di-skip tetap masuk antrean validasi
+                            if not any(item['path'] == filename_cek for item in st.session_state.hasil_capture):
+                                url_target_fallback = inject_absolute_time(url_asli, get_epoch_from_str(config['start']), get_epoch_from_str(config['end']))
+                                st.session_state.hasil_capture.append({
+                                    'nama_dash': nama_dash, 'label': label,
+                                    'path': filename_cek, 'url': url_target_fallback,
+                                    'target_px': target_px, 'ada_no_data': False # Default fallback
+                                })
+
                             tugas_berjalan += 1
                             progress_bar.progress(tugas_berjalan / total_tugas_asli)
                             continue # Langsung lompat ke dashboard selanjutnya!
@@ -536,11 +560,18 @@ with col_kiri:
                             page_baru.screenshot(path=filename)
                             if target_px > 0: atur_tinggi_gambar(filename, target_px * 2)
 
+                            # ---> [DIRUBAH] Sapu bersih duplikat. Kalau file path ini udah ada di memori, hapus dulu biar gak dobel
+                            st.session_state.hasil_capture = [i for i in st.session_state.hasil_capture if i['path'] != filename]
+
                             st.session_state.hasil_capture.append({
                                 'nama_dash': nama_dash, 'label': label,
                                 'path': filename, 'url': url_target,
                                 'target_px': target_px, 'ada_no_data': ada_no_data
                             })
+
+                            # ---> [DITAMBAHKAN] Tulis memori ini ke file JSON di harddisk server (Save Checkpoint!)
+                            with open(log_file, "w") as f:
+                                json.dump(st.session_state.hasil_capture, f)
 
                             b64_img = image_to_base64(filename)
                             tanda_nodata = "⚠️ NO DATA" if ada_no_data else "✅"
@@ -564,6 +595,20 @@ with col_kiri:
                         progress_bar.progress(tugas_berjalan / total_tugas_asli)
 
                 browser.close() 
+
+            waktu_total = time.time() - waktu_mulai
+            info_waktu_ui.markdown(f'<div style="background-color: #d1e7dd; padding: 15px; border-radius: 10px; border-left: 5px solid #0f5132;"><strong>🎉 Proses Selesai!</strong> Total waktu: {format_waktu(waktu_total)}<br>Berhasil menyelesaikan <strong>{total_tugas_asli}</strong> capture.</div>', unsafe_allow_html=True)
+            
+            status_text.update(label="✅ Capture Selesai. Masuk ke tahap validasi...", state="complete", expanded=False)
+            st.session_state.status_aplikasi = "validasi"
+            st.rerun()
+            
+        except Exception as e:
+            st.error(f"🚨 {e}")
+            if st.button("Reset Sistem"): 
+                st.session_state.status_aplikasi = "idle"
+                st.rerun()
+            #-----------------------------------------------------------------------------------
 
             waktu_total = time.time() - waktu_mulai
             info_waktu_ui.markdown(f'<div style="background-color: #d1e7dd; padding: 15px; border-radius: 10px; border-left: 5px solid #0f5132;"><strong>🎉 Proses Selesai!</strong> Total waktu: {format_waktu(waktu_total)}<br>Berhasil menyelesaikan <strong>{total_tugas_asli}</strong> capture.</div>', unsafe_allow_html=True)
