@@ -1,3 +1,10 @@
+Ini dia draf `README.md` yang rapi, profesional, dan informatif. Format ini udah disesuaikan biar Mas Ade, Bang Fendy, atau tim IT lainnya gampang paham cara kerja dan cara *setup* aplikasinya di server *private*.
+
+Kamu tinggal *copy* teks di bawah ini dan *paste* ke file `README.md` di GitHub kamu.
+
+***
+
+```markdown
 # 🤖 Automation Reporting Grafana (ILCS)
 
 Aplikasi berbasis web (*Streamlit*) yang berfungsi untuk mengotomatisasi proses *capture* (tangkapan layar) dashboard monitoring Grafana di lingkungan ILCS. Dibangun dengan **Playwright** sebagai *engine* utama untuk memastikan hasil *capture* yang stabil, presisi, dan bebas dari panel yang masih *loading* atau "No Data".
@@ -23,3 +30,70 @@ robot-reporting-psd/
 ├── list_dashboard.xlsx         # Database daftar URL dashboard Grafana
 ├── requirements.txt            # Daftar library Python yang dibutuhkan
 └── README.md                   # Dokumentasi proyek
+```
+
+## ⚙️ Persyaratan Sistem (*Prerequisites*)
+
+* Python 3.9 atau lebih baru.
+* Sistem operasi Windows, macOS, atau Linux (Ubuntu disarankan untuk *server deployment*).
+* Koneksi internet yang stabil.
+
+## 🚀 Panduan Instalasi & Deployment (Untuk Server Private / On-Premise)
+
+Ikuti langkah-langkah berikut untuk menjalankan aplikasi di lingkungan *server* atau komputer lokal:
+
+**1. Clone Repository**
+```bash
+git clone [https://github.com/DickyKurniawan88/robot-reporting-psd.git](https://github.com/DickyKurniawan88/robot-reporting-psd.git)
+cd robot-reporting-psd
+```
+
+**2. Install Dependencies Python**
+```bash
+pip install -r requirements.txt
+```
+
+**3. Install Playwright & Browser Dependencies (PENTING)**
+Karena aplikasi ini menggunakan *headless browser*, jalankan perintah berikut untuk mengunduh Chromium dan *dependencies* bawaan OS (wajib untuk server Linux):
+```bash
+playwright install chromium
+playwright install-deps chromium
+```
+
+**4. Konfigurasi Secrets (Kredensial)**
+Buat folder `.streamlit` di dalam *root directory* proyek, lalu buat file bernama `secrets.toml`. Isi dengan format berikut:
+```toml
+# .streamlit/secrets.toml
+
+[app]
+username = "admin"           # Username untuk login ke aplikasi web Streamlit
+password = "password123"     # Password untuk login ke aplikasi web Streamlit
+
+[grafana]
+username = "user_ilcs"       # Username asli untuk login ke portal monitoring ILCS
+password = "password_ilcs"   # Password asli untuk login ke portal monitoring ILCS
+```
+> **Keamanan:** File `secrets.toml` harus dimasukkan ke dalam `.gitignore` jika di-*deploy* secara lokal/on-premise agar kredensial tidak bocor.
+
+**5. Jalankan Aplikasi**
+```bash
+streamlit run app.py
+```
+
+## 📝 Format Data Source (`list_dashboard.xlsx`)
+
+Pastikan file Excel memiliki kolom dengan *header* persis seperti berikut (perhatikan besar/kecil huruf):
+
+| Provider | Kategori | Sub_Kategori | Nama_Dashboard | URL | Tinggi_Gambar |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| GCP | Data Analytic | Cluster A | Dashboard Trafik | `https://monitoring.ilcs...` | 0 |
+
+*Keterangan:* Set `Tinggi_Gambar` ke `0` untuk *capture full page*, atau masukkan angka (contoh: `1080`) untuk memotong gambar ke tinggi tertentu.
+
+## 🔒 Keamanan Data (*DevSecOps*)
+* **Volatile Storage:** Aplikasi ini bersifat *ephemeral*. Gambar disimpan di direktori *temporary* dan langsung dihapus dari memori *server* (`shutil.rmtree`) setelah proses unduh `.zip` selesai.
+* **Encrypted Secrets:** Tidak ada *password* Grafana yang di-*hardcode* di dalam skrip `app.py`.
+
+---
+*Developed for ILCS Monitoring Automation.*
+```
