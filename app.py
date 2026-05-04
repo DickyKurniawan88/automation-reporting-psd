@@ -211,7 +211,7 @@ def capture_ulang_single(item):
 
             try:
                 for _ in range(15): 
-                    stop_query_count = page.locator("[aria-label='Stop query'], [title='Stop query']").count()
+                    stop_query_count = page.locator("[aria-label='Stop query'], [title='Stop query'], [data-testid='icon-sync-slash']").count()
                     if stop_query_count == 0:
                         break 
                     page.wait_for_timeout(10000) 
