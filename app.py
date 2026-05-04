@@ -250,14 +250,31 @@ if 'temp_parent_dir' not in st.session_state:
 #  SISTEM LOGIN MENGGUNAKAN FORM
 # ==========================================
 if not st.session_state.logged_in:
-    # Injeksi CSS khusus untuk mengunci layar login (no scroll)
+    # injeksi css khusus untuk mengunci layar login (no scroll)
     st.markdown("""
         <style>
-        [data-testid="stAppViewContainer"] {
+        /* kunci mentok html dan body */
+        html, body {
             overflow: hidden !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* kunci wadah aplikasi utama streamlit (pake flag 'i' biar case-insensitive) */
+        div[data-testid="stappviewcontainer" i], 
+        div[data-testid="stmain" i], 
+        div[data-testid="stappviewblockcontainer" i] {
+            overflow: hidden !important;
+            height: 100vh !important;
+        }
+        
+        /* sembunyikan header kosong bawaan streamlit biar makin rapi */
+        header {
+            display: none !important;
         }
         </style>
-    """, unsafe_allow_html=True)
+    """, unsafe_allow_html=1)
 
     st.markdown("<br><br><br>", unsafe_allow_html=True)
     _, col_login, _ = st.columns([1.5, 2, 1.5])
@@ -279,7 +296,6 @@ if not st.session_state.logged_in:
                     st.error("❌ Username atau Password salah!")
     
     st.stop()
-
 # ==========================================
 #  KODE UI UTAMA (SETELAH LOGIN BERHASIL)
 # ==========================================
