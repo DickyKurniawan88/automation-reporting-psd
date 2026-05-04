@@ -457,7 +457,7 @@ with col_kiri:
 
                             try:
                                 for _ in range(15): 
-                                    stop_query_count = page.locator("[aria-label='Stop query'], [title='Stop query'], [data-testid='icon-sync-slash']").count()
+                                    stop_query_count = page_baru.locator("[aria-label='Stop query'], [title='Stop query'], [data-testid='icon-sync-slash']").count()
                                     if stop_query_count == 0:
                                         break 
                                     page_baru.wait_for_timeout(10000) 
