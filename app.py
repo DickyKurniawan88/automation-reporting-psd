@@ -250,6 +250,15 @@ if 'temp_parent_dir' not in st.session_state:
 #  SISTEM LOGIN MENGGUNAKAN FORM
 # ==========================================
 if not st.session_state.logged_in:
+    # Injeksi CSS khusus untuk mengunci layar login (no scroll)
+    st.markdown("""
+        <style>
+        [data-testid="stAppViewContainer"] {
+            overflow: hidden !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     st.markdown("<br><br><br>", unsafe_allow_html=True)
     _, col_login, _ = st.columns([1.5, 2, 1.5])
     
@@ -270,7 +279,6 @@ if not st.session_state.logged_in:
                     st.error("❌ Username atau Password salah!")
     
     st.stop()
-
 
 # ==========================================
 #  KODE UI UTAMA (SETELAH LOGIN BERHASIL)
