@@ -1,5 +1,5 @@
 streamlit
 pandas
-playwright
 openpyxl
-chromium
+playwright
+Pillow
