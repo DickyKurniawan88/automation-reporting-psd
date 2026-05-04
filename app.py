@@ -3,6 +3,7 @@ import sys
 import streamlit as st
 import pandas as pd
 import os
+os.system("playwright install chromium")
 import zipfile
 import re
 import calendar
