@@ -218,7 +218,7 @@ def capture_ulang_single(item):
                     page.wait_for_timeout(10000) 
             except: pass
 
-            page.wait_for_timeout(6000)
+            page.wait_for_timeout(10000)
             
             masih_no_data = page.evaluate("() => /No data|No Data/i.test(document.body.innerText)")
             
