@@ -205,10 +205,20 @@ def capture_ulang_single(item):
             except: pass
             try: page.wait_for_load_state("networkidle", timeout=max_tunggu)
             except: pass 
+            
+            # 1. Cek panel loading sampai hilang
             try: page.wait_for_selector(".panel-loading, [class*='spin'], [class*='loading']", state="hidden", timeout=max_tunggu)
             except: pass 
+            
+            # ---> JEDA NAPAS PERTAMA: Kasih 3 detik biar Grafana mencerna data yang baru ditarik
+            page.wait_for_timeout(3000)
+            
+            # 2. Cek elemen grafik (canvas) sampai kelihatan di layar
             try: page.wait_for_selector("canvas", state="visible", timeout=30000)
             except: pass
+            
+            # ---> JEDA NAPAS KEDUA: Kasih 3 detik lagi biar gambar candlestick/grafiknya kelar dirender 100%
+            page.wait_for_timeout(3000)
 
             try:
                 for _ in range(15): 
