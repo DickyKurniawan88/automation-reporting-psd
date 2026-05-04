@@ -596,18 +596,6 @@ with col_kiri:
 
                 browser.close() 
 
-            waktu_total = time.time() - waktu_mulai
-            info_waktu_ui.markdown(f'<div style="background-color: #d1e7dd; padding: 15px; border-radius: 10px; border-left: 5px solid #0f5132;"><strong>🎉 Proses Selesai!</strong> Total waktu: {format_waktu(waktu_total)}<br>Berhasil menyelesaikan <strong>{total_tugas_asli}</strong> capture.</div>', unsafe_allow_html=True)
-            
-            status_text.update(label="✅ Capture Selesai. Masuk ke tahap validasi...", state="complete", expanded=False)
-            st.session_state.status_aplikasi = "validasi"
-            st.rerun()
-            
-        except Exception as e:
-            st.error(f"🚨 {e}")
-            if st.button("Reset Sistem"): 
-                st.session_state.status_aplikasi = "idle"
-                st.rerun()
             #-----------------------------------------------------------------------------------
 
             waktu_total = time.time() - waktu_mulai
