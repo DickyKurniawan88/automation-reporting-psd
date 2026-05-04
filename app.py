@@ -415,8 +415,8 @@ with col_kiri:
         with c1:
             if st.button("❌ Batal", width="stretch"):
                 st.session_state.status_aplikasi = "idle"; st.rerun()
-#-----------------------------------------------------------------------------------
-     elif st.session_state.status_aplikasi == "running":
+#----------------------------------------------------------------------------------
+    elif st.session_state.status_aplikasi == "running":
         st.title("🤖 Robot Sedang Bekerja...")
         st.info("💡 **Engine:** Playwright Auto-Wait dengan Tab Management Memory Safe.")
         if st.button("🔄 Layar Nyangkut? Klik Disini (Reset)", width="stretch"):
@@ -595,7 +595,6 @@ with col_kiri:
                         progress_bar.progress(tugas_berjalan / total_tugas_asli)
 
                 browser.close() 
-
             #-----------------------------------------------------------------------------------
 
             waktu_total = time.time() - waktu_mulai
