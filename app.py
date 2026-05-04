@@ -133,12 +133,12 @@ def zip_folder_to_memory(folder_path):
     return memory_file
 
 def tampilkan_tombol_wa():
-    try:
         wa_path = os.path.join("Image", "LogoWA.png")
         if os.path.exists(wa_path):
             wa_html = f'<a href="https://wa.me/6287806777808?text=Assalamualaikum,%20Mas%20Dicky" target="_blank" class="wa-float"><img src="data:image/png;base64,{image_to_base64(wa_path)}" alt="WhatsApp"></a><style>.wa-float {{ position: fixed; width: 60px; height: 60px; bottom: 40px; right: 40px; background-color: transparent; border-radius: 50px; text-align: center; z-index: 9999; box-shadow: 2px 2px 10px rgba(0,0,0,0.3); transition: transform 0.3s ease-in-out; }} .wa-float img {{ width: 100%; height: 100%; border-radius: 50%; }} .wa-float:hover {{ transform: scale(1.1); }} </style>'
             st.markdown(wa_html, unsafe_allow_html=True)
-    except: pass
+        else:
+            st.error(f"Peringatan Debugging: File {wa_path} tidak terdeteksi oleh sistem!")
 
 # FITUR BARU: Mengecek koneksi internet secara native tanpa library eksternal
 def cek_koneksi_internet():
