@@ -1,0 +1,6 @@
+.git
+.devcontainer
+__pycache__
+*.pyc
+chrome_data_playwright/
+FOLDER_HASIL_SEMENTARA/
