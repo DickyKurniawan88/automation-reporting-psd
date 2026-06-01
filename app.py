@@ -436,7 +436,6 @@ with st.sidebar:
         st.info("🔒 Konfigurasi Waktu dikunci.")
         st.markdown("<small>Selesaikan proses saat ini atau klik tombol <b>Reset/Kembali ke Beranda</b> untuk mengatur ulang waktu laporan.</small>", unsafe_allow_html=True)
 
-with col_kiri:
 #=================================================================================================================================================================
 with col_kiri:
     if st.session_state.status_aplikasi == "idle":
