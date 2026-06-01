@@ -380,7 +380,7 @@ with col_kanan:
     else:
         st.error(f"❌ File '{NAMA_FILE_EXCEL}' Tidak Ditemukan!")
         st.stop()
-
+#------------------------------------------------------------------------------------------------------------------------------------------------------------
 with st.sidebar:
     img_path = os.path.join("Image", "LogoPerusahaan.png")
     try:
@@ -388,47 +388,56 @@ with st.sidebar:
     except: pass
 
     st.header("⚙️ Konfigurasi Waktu")
-    pilihan_mode = st.radio("Pilih Mode Periode:", ('Custom Range', 'Full Batch (Week 1-4 & Monthly)', 'Single Preset', 'Multi Select'))
+    #update
+    if st.session_state.status_aplikasi == "idle":
+        pilihan_mode = st.radio("Pilih Mode Periode:", ('Custom Range', 'Full Batch (Week 1-4 & Monthly)', 'Single Preset', 'Multi Select'))
 
-    configs = []
-    today = datetime.now()
-    root_name_zip = "Report"
-    
-    if pilihan_mode == 'Custom Range':
-        col1, col2 = st.columns(2)
-        start_date = col1.date_input("Mulai", today)
-        end_date = col2.date_input("Akhir", today)
-        if st.checkbox("Gunakan Tanggal Ini"):
-             root_name_zip = f"Laporan_Custom_{start_date}"
-             configs.append({'label': 'custom_range', 'start': f"{start_date} 00:00:00", 'end': f"{end_date} 23:59:59"})
+        configs = []
+        today = datetime.now()
+        root_name_zip = "Report"
+
+        if pilihan_mode == 'Custom Range':
+            col1, col2 = st.columns(2)
+            start_date = col1.date_input("Mulai", today)
+            end_date = col2.date_input("Akhir", today)
+            if st.checkbox("Gunakan Tanggal Ini"):
+                 root_name_zip = f"Laporan_Custom_{start_date}"
+                 configs.append({'label': 'custom_range', 'start': f"{start_date} 00:00:00", 'end': f"{end_date} 23:59:59"})
+        else:
+            col_y, col_m = st.columns(2)
+            tahun = col_y.number_input("Tahun", value=today.year)
+            bulan = col_m.number_input("Bulan", value=today.month, min_value=1, max_value=12)
+            last_day = calendar.monthrange(tahun, bulan)[1]
+            root_name_zip = f"{get_indo_month_name(bulan)}_{tahun}"
+            
+            definitions = {
+                'Week 1': {'key': 'week1',   'start': f"{tahun}-{bulan:02d}-01 00:00:00", 'end': f"{tahun}-{bulan:02d}-07 23:59:59"},
+                'Week 2': {'key': 'week2',   'start': f"{tahun}-{bulan:02d}-08 00:00:00", 'end': f"{tahun}-{bulan:02d}-14 23:59:59"},
+                'Week 3': {'key': 'week3',   'start': f"{tahun}-{bulan:02d}-15 00:00:00", 'end': f"{tahun}-{bulan:02d}-21 23:59:59"},
+                'Week 4': {'key': 'week4',   'start': f"{tahun}-{bulan:02d}-22 00:00:00", 'end': f"{tahun}-{bulan:02d}-28 23:59:59"},
+                'Monthly': {'key': 'monthly', 'start': f"{tahun}-{bulan:02d}-01 00:00:00", 'end': f"{tahun}-{bulan:02d}-{last_day:02d} 23:59:59"},
+            }
+            if pilihan_mode == 'Full Batch (Week 1-4 & Monthly)':
+                for k, val in definitions.items(): configs.append({'label': val['key'], 'start': val['start'], 'end': val['end']})
+            elif pilihan_mode == 'Single Preset':
+                pilih_satu = st.selectbox("Pilih Periode:", list(definitions.keys()))
+                configs.append({'label': definitions[pilih_satu]['key'], 'start': definitions[pilih_satu]['start'], 'end': definitions[pilih_satu]['end']})
+            elif pilihan_mode == 'Multi Select':
+                for item in st.multiselect("Pilih Periode:", list(definitions.keys())): 
+                    configs.append({'label': definitions[item]['key'], 'start': definitions[item]['start'], 'end': definitions[item]['end']})
+
+        st.divider()
+        if st.button("🚀 JALANKAN ROBOT", type="primary", width="stretch"):
+            if not configs: st.error("⚠️ Harap tentukan konfigurasi waktu!")
+            else: st.session_state.status_aplikasi = "konfirmasi"; st.rerun()
+            
+    # ---> TAMPILAN KALAU ROBOT LAGI JALAN / VALIDASI <---
     else:
-        col_y, col_m = st.columns(2)
-        tahun = col_y.number_input("Tahun", value=today.year)
-        bulan = col_m.number_input("Bulan", value=today.month, min_value=1, max_value=12)
-        last_day = calendar.monthrange(tahun, bulan)[1]
-        root_name_zip = f"{get_indo_month_name(bulan)}_{tahun}"
-        
-        definitions = {
-            'Week 1': {'key': 'week1',   'start': f"{tahun}-{bulan:02d}-01 00:00:00", 'end': f"{tahun}-{bulan:02d}-07 23:59:59"},
-            'Week 2': {'key': 'week2',   'start': f"{tahun}-{bulan:02d}-08 00:00:00", 'end': f"{tahun}-{bulan:02d}-14 23:59:59"},
-            'Week 3': {'key': 'week3',   'start': f"{tahun}-{bulan:02d}-15 00:00:00", 'end': f"{tahun}-{bulan:02d}-21 23:59:59"},
-            'Week 4': {'key': 'week4',   'start': f"{tahun}-{bulan:02d}-22 00:00:00", 'end': f"{tahun}-{bulan:02d}-28 23:59:59"},
-            'Monthly': {'key': 'monthly', 'start': f"{tahun}-{bulan:02d}-01 00:00:00", 'end': f"{tahun}-{bulan:02d}-{last_day:02d} 23:59:59"},
-        }
-        if pilihan_mode == 'Full Batch (Week 1-4 & Monthly)':
-            for k, val in definitions.items(): configs.append({'label': val['key'], 'start': val['start'], 'end': val['end']})
-        elif pilihan_mode == 'Single Preset':
-            pilih_satu = st.selectbox("Pilih Periode:", list(definitions.keys()))
-            configs.append({'label': definitions[pilih_satu]['key'], 'start': definitions[pilih_satu]['start'], 'end': definitions[pilih_satu]['end']})
-        elif pilihan_mode == 'Multi Select':
-            for item in st.multiselect("Pilih Periode:", list(definitions.keys())): 
-                configs.append({'label': definitions[item]['key'], 'start': definitions[item]['start'], 'end': definitions[item]['end']})
+        st.info("🔒 Konfigurasi Waktu dikunci.")
+        st.markdown("<small>Selesaikan proses saat ini atau klik tombol <b>Reset/Kembali ke Beranda</b> untuk mengatur ulang waktu laporan.</small>", unsafe_allow_html=True)
 
-    st.divider()
-    if st.button("🚀 JALANKAN ROBOT", type="primary", width="stretch"):
-        if not configs: st.error("⚠️ Harap tentukan konfigurasi waktu!")
-        else: st.session_state.status_aplikasi = "konfirmasi"; st.rerun()
-
+with col_kiri:
+#=================================================================================================================================================================
 with col_kiri:
     if st.session_state.status_aplikasi == "idle":
         st.title("🤖 Automation Reporting (Playwright Engine)")
