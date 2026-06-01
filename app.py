@@ -182,7 +182,7 @@ def capture_ulang_single(item):
         with sync_playwright() as p:
             browser = p.chromium.launch_persistent_context(
                 user_data_dir=FOLDER_PROFILE, headless=True,
-                viewport={'width': 1920, 'height': 1080},
+                viewport={'width': 3840, 'height': 2160},
                 device_scale_factor=2,  
                 args=["--disable-gpu", "--disable-dev-shm-usage"]
             )
@@ -202,7 +202,7 @@ def capture_ulang_single(item):
             max_tunggu = 150000 if 'load balancer' in str(item['nama_dash']).lower() or item['label'].lower() == 'monthly' else 90000
 
             page.goto(item['url'], wait_until="commit", timeout=timeout_limit)
-            try: page.wait_for_selector("body", timeout=60000); page.evaluate("document.body.style.zoom='50%'")
+            try: page.wait_for_selector("body", timeout=60000);
             except: pass
             try: page.wait_for_load_state("networkidle", timeout=max_tunggu)
             except: pass 
