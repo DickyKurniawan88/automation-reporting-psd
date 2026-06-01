@@ -213,26 +213,58 @@ def capture_ulang_single(item):
             
             # ---> JEDA NAPAS PERTAMA: Kasih 3 detik biar Grafana mencerna data yang baru ditarik
             page.wait_for_timeout(3000)
-            
+            # --------------------------------------------------------------------------------------------------------
             # 2. Cek elemen grafik (canvas) sampai kelihatan di layar
             try: page.wait_for_selector("canvas", state="visible", timeout=30000)
             except: pass
             
-            # ---> JEDA NAPAS KEDUA: Kasih 3 detik lagi biar gambar candlestick/grafiknya kelar dirender 100%
-            page.wait_for_timeout(3000)
-
+            # ---> JURUS 1: SCROLL PANCINGAN <---
+            # Gulir mouse ke bawah dan ke atas biar Grafana sadar dan ngerender semua panel
+            try:
+                page.mouse.wheel(0, 1500)
+                page.wait_for_timeout(2000)
+                page.mouse.wheel(0, -1500)
+                page.wait_for_timeout(2000)
+            except: pass
             try:
                 for _ in range(15): 
                     stop_query_count = page.locator("[aria-label='Stop query'], [title='Stop query'], [data-testid='icon-sync-slash']").count()
                     if stop_query_count == 0:
                         break 
-                    page.wait_for_timeout(10000) 
+                    page.wait_for_timeout(5000) 
             except: pass
+            page.wait_for_timeout(10000) # Jeda napas standar
 
-            page.wait_for_timeout(10000)
-            
-            masih_no_data = page.evaluate("() => /No data|No Data/i.test(document.body.innerText)")
-            
+            # CEK PERTAMA: Apakah grafiknya masih zonk? (tambah N/A)
+            masih_no_data = page.evaluate("() => /No data|No Data|N\\/A/i.test(document.body.innerText)")
+
+            # ---> JURUS 2: FORCE REFRESH KALAU ZONK <---
+            if masih_no_data:
+                try:
+                    # Coba klik tombol "Refresh dashboard" bawaan Grafana di pojok kanan atas
+                    btn_refresh = page.locator("button[aria-label='Refresh dashboard'], button[title='Refresh dashboard']")
+                    if btn_refresh.is_visible():
+                        btn_refresh.click()
+                    else:
+                        page.reload(wait_until="commit") # Kalau tombol ga ketemu, reload paksa tab-nya
+                    
+                    page.wait_for_timeout(5000) # Tunggu Grafana bereaksi
+                    
+                    # Nungguin ulang kueri Grafana (kesempatan kedua, sabar sampai 45 detik)
+                    for _ in range(9): 
+                        if page.locator("[aria-label='Stop query']").count() == 0:
+                            break 
+                        page.wait_for_timeout(5000)
+                        
+                    # Kasih napas ekstra 15 detik buat jaminan grafik berat kelar dirender
+                    page.wait_for_timeout(15000)
+                except:
+                    page.wait_for_timeout(20000) # Fallback kalau error
+                
+                # Cek hasil akhir setelah dipaksa refresh
+                masih_no_data = page.evaluate("() => /No data|No Data|N\\/A/i.test(document.body.innerText)")
+
+            # -------------------------------------------------------------------------------------------------------------
             page.screenshot(path=item['path'])
             if item['target_px'] > 0: atur_tinggi_gambar(item['path'], item['target_px'] * 2)
             
