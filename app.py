@@ -661,10 +661,12 @@ with col_kiri:
     # --- STATE 4: VALIDASI ---
     elif st.session_state.status_aplikasi == "validasi":
         st.title("🔎 Validasi Hasil Capture")
-        st.write(item_bermasalah)
         st.info("Sistem mendeteksi tulisan **'No data'**. Kamu bisa Capture Ulang secara satuan khusus untuk gambar tersebut.")
         
         item_bermasalah = [item for item in st.session_state.hasil_capture if item['ada_no_data']]
+        # ---> BONGKAR ISI MEMORI ROBOT <---
+        st.write("🛑 CEK DATA MENTAH DARI JSON:")
+        st.json(item_bermasalah)
         
         if not item_bermasalah:
             st.success("🎉 Luar biasa! Tidak ditemukan satupun panel 'No data' di seluruh dashboard.")
