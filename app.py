@@ -429,7 +429,11 @@ with st.sidebar:
         st.divider()
         if st.button("🚀 JALANKAN ROBOT", type="primary", width="stretch"):
             if not configs: st.error("⚠️ Harap tentukan konfigurasi waktu!")
-            else: st.session_state.status_aplikasi = "konfirmasi"; st.rerun()
+            else:
+                st.session_state.configs = configs
+                st.session_state.root_name_zip = root_name_zip
+                st.session_state.status_aplikasi = "konfirmasi"
+                st.rerun()
             
     # ---> TAMPILAN KALAU ROBOT LAGI JALAN / VALIDASI <---
     else:
@@ -468,6 +472,10 @@ with col_kiri:
         status_text = st.status("Menyiapkan Sistem Playwright...", expanded=True)
         
         try:
+            # ---> AMBIL LAGI INGATAN DARI SESSION STATE <---
+            configs = st.session_state.configs
+            root_name_zip = st.session_state.root_name_zip
+            
             temp_parent = os.path.join(os.getcwd(), "FOLDER_HASIL_SEMENTARA")
             os.makedirs(temp_parent, exist_ok=True)
             
