@@ -674,7 +674,10 @@ with col_kiri:
             for idx, item in enumerate(item_bermasalah):
                 c1, c2 = st.columns([3, 1])
                 with c1:
-                    st.image(item['path'], caption=f"{item['nama_dash']} - Periode: {item['label']}", width="stretch")
+                    # 1. Hapus caption bawaannya
+                    st.image(item['path'], width="stretch")
+                    # 2. Bikin custom caption berupa link yang bisa diklik (warna biru dan buka tab baru)
+                    st.markdown(f"<div style='text-align: center; margin-top: -10px;'><a href='{item['url']}' target='_blank' style='color: #1f77b4; text-decoration: none; font-size: 14px;'>🔗 <b>{item['nama_dash']} - Periode: {item['label']}</b></a></div><br>", unsafe_allow_html=True)
                 with c2:
                     st.write("") # Spacer
                     st.write("")
