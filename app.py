@@ -310,7 +310,50 @@ if 'temp_parent_dir' not in st.session_state:
 # ==========================================
 #  SISTEM LOGIN MENGGUNAKAN FORM
 # ==========================================
+
+# ---> FITUR BARU: POP-UP PANDUAN <---
+@st.dialog("📖 Panduan Penggunaan Robot")
+def panduan_popup():
+    # CSS Sakti buat ngilangin tombol 'X' (Close) bawaan Streamlit
+    st.markdown("""
+        <style>
+        div[data-testid="stDialog"] button[aria-label="Close"] {
+            display: none !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    **Halo! Selamat datang di Sistem Automation Reporting.** 👋
+    
+    Aplikasi ini dirancang agar siapapun bisa menarik data laporan Grafana secara otomatis dengan mudah tanpa perlu mengerti *coding*.
+    
+    **Cara Penggunaan:**
+    1. **Login** menggunakan kredensial (Username & Password) yang telah diberikan.
+    2. Setelah masuk, atur **Periode Waktu** di menu sebelah kiri (misal: *Week 1*, *Monthly*, dll).
+    3. Klik tombol biru **🚀 JALANKAN ROBOT**.
+    4. Biarkan robot bekerja secara otomatis. Jika sudah selesai 100%, klik tombol **📥 Download Hasil Capture (ZIP)**.
+    
+    *⚠️ Catatan Penting: Selama robot sedang berjalan, pastikan koneksi internet stabil dan jangan menutup tab browser.*
+    """)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Tombol mutlak di paling bawah untuk menutup pop-up
+    if st.button("Oke, Saya Paham!", type="primary", use_container_width=True):
+        st.session_state.tutorial_dibaca = True
+        st.rerun()
+
 if not st.session_state.logged_in:
+    
+    # Cek apakah sesi ini sudah baca panduan atau belum
+    if 'tutorial_dibaca' not in st.session_state:
+        st.session_state.tutorial_dibaca = False
+        
+    # Kalau belum baca, tembak pop-up nya ke tengah layar!
+    if not st.session_state.tutorial_dibaca:
+        panduan_popup()
+
     # injeksi css khusus untuk mengunci layar login (no scroll) + animasi imut
     st.markdown("""
         <style>
