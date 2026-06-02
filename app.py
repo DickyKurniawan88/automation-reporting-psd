@@ -501,8 +501,8 @@ with col_kiri:
                 browser = p.chromium.launch_persistent_context(
                     user_data_dir=FOLDER_PROFILE,
                     headless=True,
-                    viewport={'width': 1920, 'height': 1080},
-                    device_scale_factor=2, 
+                    viewport={'width': 3840, 'height': 2160},
+                    device_scale_factor=1,
                     args=["--disable-gpu", "--disable-dev-shm-usage"]
                 )
                 
@@ -580,7 +580,6 @@ with col_kiri:
 
                             try:
                                 page_baru.wait_for_selector("body", timeout=60000)
-                                page_baru.evaluate("document.body.style.zoom='50%'")
                             except: pass
                             
                             try: page_baru.wait_for_load_state("networkidle", timeout=max_tunggu)
@@ -681,9 +680,10 @@ with col_kiri:
                     st.image(item['path'], width="stretch")
                     # 2. Bikin custom caption berupa link yang bisa diklik (warna biru dan buka tab baru)
                     st.markdown(f"<div style='text-align: center; margin-top: -10px;'><a href='{item['url']}' target='_blank' style='color: #1f77b4; text-decoration: none; font-size: 14px;'>🔗 <b>{item['nama_dash']} - Periode: {item['label']}</b></a></div><br>", unsafe_allow_html=True)
+
                 with c2:
                     st.write("") # Spacer
-                    st.write("")
+                    
                     if st.button(f"🔄 Capture Ulang", key=f"btn_recapture_{idx}", width="stretch"):
                         with st.spinner("Sedang mengambil ulang gambar..."):
                             sukses, msh_nodata = capture_ulang_single(item)
@@ -692,13 +692,26 @@ with col_kiri:
                                     if d['path'] == item['path']:
                                         st.session_state.hasil_capture[i]['ada_no_data'] = msh_nodata
                                         break
-                                if msh_nodata: st.error("❌ Masih No Data!")
-                                else: st.success("✅ Berhasil terisi data!")
-                                time.sleep(1)
+                                if msh_nodata: 
+                                    st.error("❌ Masih No Data!")
+                                    time.sleep(2)
+                                else: 
+                                    st.success("✅ Berhasil terisi data!")
+                                    time.sleep(1)
                                 st.rerun()
                             else:
                                 st.error("Gagal capture ulang.")
+                                
+                    # ---> TAMBAHAN TOMBOL ABAIKAN <---
+                    if st.button("✅ Abaikan (Terima Kosong)", key=f"btn_ignore_{idx}", width="stretch"):
+                        for i, d in enumerate(st.session_state.hasil_capture):
+                            if d['path'] == item['path']:
+                                st.session_state.hasil_capture[i]['ada_no_data'] = False
+                                break
+                        st.rerun()
+                        
                 st.divider()
+
 
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("✅ Lanjut Zip Semua File & Download", type="primary", width="stretch"):
