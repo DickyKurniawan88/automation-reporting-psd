@@ -226,14 +226,31 @@ def capture_ulang_single(item):
                 page.mouse.wheel(0, -1500)
                 page.wait_for_timeout(2000)
             except: pass
+            # ---> JURUS UTAMA: SMART WAIT LOOP (Anti-Prank & Anti-Kosong) <---
             try:
-                for _ in range(15): 
+                for _ in range(20): 
                     stop_query_count = page.locator("[aria-label='Stop query'], [title='Stop query'], [data-testid='icon-sync-slash']").count()
-                    if stop_query_count == 0:
-                        break 
+                    panel_loading_count = page.locator(".panel-loading, [class*='spin']").count()
+                    
+                    if stop_query_count == 0 and panel_loading_count == 0:
+                        page.wait_for_timeout(4000)
+                        cek_lagi_stop = page.locator("[aria-label='Stop query'], [title='Stop query']").count()
+                        cek_lagi_panel = page.locator(".panel-loading").count()
+                        
+                        if cek_lagi_stop == 0 and cek_lagi_panel == 0:
+                            break 
+                            
                     page.wait_for_timeout(5000) 
             except: pass
-            page.wait_for_timeout(10000) # Jeda napas standar
+            
+            page.wait_for_timeout(5000)
+            
+            # ---> LAPIS TERAKHIR: JURUS SAPU JAGAT <---
+            try:
+                page.evaluate("""
+                    document.querySelectorAll('[aria-label="Stop query"], [title="Stop query"], button:has-text("Cancel")').forEach(el => el.style.display = 'none');
+                """)
+            except: pass
 
             # CEK PERTAMA: Apakah grafiknya masih zonk? (tambah N/A)
             masih_no_data = page.evaluate("() => /No data|No Data|N\\/A/i.test(document.body.innerText)")
@@ -590,21 +607,39 @@ with col_kiri:
                             
                             try: page_baru.wait_for_selector("canvas", state="visible", timeout=30000)
                             except PlaywrightTimeoutError: pass
-
+                            #!
+                            # ---> JURUS UTAMA: SMART WAIT LOOP (Anti-Prank & Anti-Kosong) <---
                             try:
-                                for _ in range(15): 
+                                for _ in range(20): 
                                     stop_query_count = page_baru.locator("[aria-label='Stop query'], [title='Stop query'], [data-testid='icon-sync-slash']").count()
-                                    if stop_query_count == 0:
-                                        break 
-                                    page_baru.wait_for_timeout(10000) 
+                                    panel_loading_count = page_baru.locator(".panel-loading, [class*='spin']").count()
+                                    
+                                    if stop_query_count == 0 and panel_loading_count == 0:
+                                        page_baru.wait_for_timeout(4000)
+                                        
+                                        cek_lagi_stop = page_baru.locator("[aria-label='Stop query'], [title='Stop query']").count()
+                                        cek_lagi_panel = page_baru.locator(".panel-loading").count()
+                                        
+                                        if cek_lagi_stop == 0 and cek_lagi_panel == 0:
+                                            break 
+                                            
+                                    page_baru.wait_for_timeout(5000) 
                             except: pass
 
                             page_baru.wait_for_timeout(5000)
+                        
+                            # ---> LAPIS TERAKHIR: JURUS SAPU JAGAT <---
+                            try:
+                                page_baru.evaluate("""
+                                    document.querySelectorAll('[aria-label="Stop query"], [title="Stop query"], button:has-text("Cancel")').forEach(el => el.style.display = 'none');
+                                """)
+                            except: pass
                         
                             ada_no_data = page_baru.evaluate("() => /No data|No Data/i.test(document.body.innerText)")
                             
                             filename = os.path.join(target_dir, f"{label}.png")
                             page_baru.screenshot(path=filename)
+                            #!
                             if target_px > 0: atur_tinggi_gambar(filename, target_px * 2)
 
                             # ---> [DIRUBAH] Sapu bersih duplikat. Kalau file path ini udah ada di memori, hapus dulu biar gak dobel
