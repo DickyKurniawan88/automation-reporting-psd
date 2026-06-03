@@ -57,7 +57,9 @@ def get_indo_month_name(month_int):
     return bulan_indo.get(month_int, str(month_int))
 
 def clean_filename(text):
-    if pd.isna(text): return "General"
+    # Kalau datanya kosong (NaN) atau cuma spasi, kembalikan teks kosong ""
+    if pd.isna(text) or str(text).strip() == "" or str(text).lower() == "nan": 
+        return ""
     return re.sub(r'[\\/*?:"<>|]', "", str(text)).strip()
 
 def format_waktu(detik_total):
@@ -589,7 +591,15 @@ with col_kiri:
                     
                     if pd.isna(url_asli): continue
 
-                    target_dir = os.path.join(base_output_dir, provider, kategori, sub_kat, clean_filename(nama_dash))
+                    # ---> STRUKTUR FOLDER DINAMIS (SKIP YANG KOSONG) <---
+                    # Kita kumpulin calon nama foldernya
+                    path_parts = [base_output_dir, provider, kategori, sub_kat, clean_filename(nama_dash)]
+                    
+                    # Lalu kita buang semua elemen yang isinya kosong ("")
+                    path_parts = [p for p in path_parts if p != ""] 
+                    
+                    # Gabungkan sisanya jadi jalur folder yang bener
+                    target_dir = os.path.join(*path_parts)
                     os.makedirs(target_dir, exist_ok=True)
 
                     for config in configs:
