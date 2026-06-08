@@ -1,0 +1,26 @@
+name: Deploy Robot ke VPS otomatis 🚀
+
+on:
+  push:
+    branches:
+      - main  # Robot ini cuma jalan kalau Dicky nge-push ke cabang main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Eksekusi update di VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST_IP }}
+          username: ${{ secrets.HOST_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # 1. Masuk ke folder project
+            cd robot-reporting-psd
+            
+            # 2. Tarik kodingan terbaru pakai token biar ga nyangkut minta password
+            git pull https://DickyKurniawan88:${{ secrets.GH_PAT }}@github.com/DickyKurniawan88/robot-reporting-psd.git main
+            
+            # 3. Bangun ulang dockernya di latar belakang
+            sudo docker compose up -d --build
