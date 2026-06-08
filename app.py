@@ -17,7 +17,7 @@ from datetime import datetime
 from PIL import Image
 import base64
 
-# ==========================================
+# ===========================================
 #  FIX UNTUK WINDOWS (MENCEGAH CRASH NOTIMPLEMENTEDERROR)
 # ==========================================
 if sys.platform == 'win32':
