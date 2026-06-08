@@ -185,7 +185,7 @@ def capture_ulang_single(item):
             browser = p.chromium.launch_persistent_context(
                 user_data_dir=FOLDER_PROFILE, headless=True,
                 viewport={'width': 3840, 'height': 2160},
-                device_scale_factor=2,  
+                device_scale_factor=1,  # <--- FIX: UBAH ANGKA 2 JADI 1
                 args=["--disable-gpu", "--disable-dev-shm-usage"]
             )
             page = browser.pages[0] if len(browser.pages) > 0 else browser.new_page()
@@ -285,7 +285,7 @@ def capture_ulang_single(item):
 
             # -------------------------------------------------------------------------------------------------------------
             page.screenshot(path=item['path'])
-            if item['target_px'] > 0: atur_tinggi_gambar(item['path'], item['target_px'] * 2)
+            if item['target_px'] > 0: atur_tinggi_gambar(item['path'], item['target_px'])
             
             browser.close()
             return True, masih_no_data
@@ -752,8 +752,6 @@ with col_kiri:
         
         item_bermasalah = [item for item in st.session_state.hasil_capture if item['ada_no_data']]
         # ---> BONGKAR ISI MEMORI ROBOT <---
-        st.write("🛑 CEK DATA MENTAH DARI JSON:")
-        st.json(item_bermasalah)
         
         if not item_bermasalah:
             st.success("🎉 Luar biasa! Tidak ditemukan satupun panel 'No data' di seluruh dashboard.")
