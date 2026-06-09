@@ -431,11 +431,36 @@ with col_kanan:
             df = pd.read_excel(NAMA_FILE_EXCEL)
             if 'Tinggi_Gambar' not in df.columns: df['Tinggi_Gambar'] = 0
             df = df.sort_values(by=['Provider', 'Kategori', 'Sub_Kategori'])
-            total_dash = len(df)
+            # ---> FITUR BARU: Tambahkan kolom Checkbox (default True/Kecentang semua)
+            df.insert(0, 'Pilih', True) 
+            
             st.success(f"✅ Terhubung: {NAMA_FILE_EXCEL}")
-            st.info(f"Total: **{total_dash} Dashboard**")
-            with st.expander("🔍 Preview Isi Data", expanded=True):
-                st.dataframe(df[['Provider', 'Nama_Dashboard']], width="stretch", height=300)
+            
+            with st.expander("🔍 Preview & Pilih Dashboard", expanded=True):
+                # Tampilkan data editor agar tabel bisa diklik (hanya tampilkan 3 kolom agar rapi)
+                edited_df = st.data_editor(
+                    df[['Pilih', 'Provider', 'Nama_Dashboard']], 
+                    hide_index=True,
+                    column_config={
+                        "Pilih": st.column_config.CheckboxColumn("Pilih", default=True)
+                    },
+                    disabled=["Provider", "Nama_Dashboard"], # Kunci teks agar tidak bisa diedit admin
+                    use_container_width=True, 
+                    height=300
+                )
+            
+            # Update status centangan ke memori utama
+            df['Pilih'] = edited_df['Pilih']
+            
+            # Saring! Hanya ambil baris yang dicentang (True)
+            df_selected = df[df['Pilih'] == True]
+            
+            total_dash = len(df_selected)
+            st.info(f"Total Terpilih: **{total_dash} Dashboard**")
+            
+            # Simpan data yang terpilih ke Session State agar bisa dibaca robot
+            st.session_state.df_selected = df_selected
+
         except Exception as e:
             st.error(f"File rusak/error: {e}")
             st.stop()
@@ -490,10 +515,15 @@ with st.sidebar:
 
         st.divider()
         if st.button("🚀 JALANKAN ROBOT", type="primary", width="stretch"):
-            if not configs: st.error("⚠️ Harap tentukan konfigurasi waktu!")
+            if not configs: 
+                st.error("⚠️ Harap tentukan konfigurasi waktu!")
+            elif len(st.session_state.df_selected) == 0: 
+                st.error("⚠️ Harap centang minimal 1 dashboard pada tabel di sebelah kanan!")
             else:
                 st.session_state.configs = configs
                 st.session_state.root_name_zip = root_name_zip
+                # Kunci data yang sudah difilter centang untuk dieksekusi robot
+                st.session_state.df_target = st.session_state.df_selected 
                 st.session_state.status_aplikasi = "konfirmasi"
                 st.rerun()
             
@@ -572,14 +602,15 @@ with col_kiri:
                 page_login = browser.pages[0] if len(browser.pages) > 0 else browser.new_page()
                 login_otomatis_playwright(page_login, status_text)
                 # Biarkan page_login tetap terbuka agar session tetap terjaga
-                
-                total_tugas_asli = total_dash * len(configs)
+                # Hitung ulang berdasarkan dashboard yang dicentang
+                total_tugas_asli = len(st.session_state.df_target) * len(configs)
                 tugas_berjalan = 0
                 waktu_mulai = time.time()
                 
                 status_text.write(f"⏳ Total antrean: {total_tugas_asli} Capture...")
                 
-                for index, row in df.iterrows():
+                # Looping HANYA pada data yang sudah difilter/dicentang
+                for index, row in st.session_state.df_target.iterrows():
                     nama_dash = row['Nama_Dashboard']
                     url_asli  = row['URL']
                     provider  = clean_filename(row['Provider'])
