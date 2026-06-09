@@ -724,7 +724,7 @@ with col_kiri:
                             filename = os.path.join(target_dir, f"{label}.png")
                             page_baru.screenshot(path=filename)
                             #!
-                            if target_px > 0: atur_tinggi_gambar(filename, target_px * 2)
+                            if target_px > 0: atur_tinggi_gambar(filename, target_px)
 
                             # ---> [DIRUBAH] Sapu bersih duplikat. Kalau file path ini udah ada di memori, hapus dulu biar gak dobel
                             st.session_state.hasil_capture = [i for i in st.session_state.hasil_capture if i['path'] != filename]
