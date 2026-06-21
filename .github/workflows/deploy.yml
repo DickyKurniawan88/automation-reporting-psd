@@ -15,6 +15,7 @@ jobs:
           host: ${{ secrets.HOST_IP }}
           username: ${{ secrets.HOST_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
+          command_timeout: 30m    # <--- INI BARIS PENYELAMATNYA
           script: |
             # 1. Masuk ke folder project
             cd robot-reporting-psd
