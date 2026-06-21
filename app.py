@@ -285,7 +285,7 @@ def capture_ulang_single(item):
 
             # -------------------------------------------------------------------------------------------------------------
             page.screenshot(path=item['path'])
-            if item['target_px'] > 0: atur_tinggi_gambar(item['path'], item['target_px'])
+            if item['target_px'] > 0: atur_tinggi_gambar(item['path'], item['target_px'] * 2)
             
             browser.close()
             return True, masih_no_data
@@ -577,7 +577,14 @@ with col_kiri:
         st.title("⚙️ Sistem Sedang Menjalankan Pemrosesan...")
         st.info("💡 **Engine:** Playwright Auto-Wait dengan Tab Management Memory Safe.")
         if st.button("🔄 Mulai Ulang Sistem (Reset Apabila Tidak Responsif)", width="stretch"):
-            st.session_state.status_aplikasi = "idle"; st.rerun()
+            # ---> SAPU BERSIH MEMORI & HAPUS FOLDER GAMBAR YANG NYANGKUT <---
+            st.session_state.hasil_capture = []
+            try: 
+                shutil.rmtree(st.session_state.temp_parent_dir, ignore_errors=True)
+            except: pass
+            
+            st.session_state.status_aplikasi = "idle"
+            st.rerun()
         st.divider()
         
         progress_bar = st.progress(0)
@@ -745,7 +752,7 @@ with col_kiri:
                             filename = os.path.join(target_dir, f"{label}.png")
                             page_baru.screenshot(path=filename)
                             #!
-                            if target_px > 0: atur_tinggi_gambar(filename, target_px)
+                            if target_px > 0: atur_tinggi_gambar(filename, target_px * 2)
 
                             # ---> [DIRUBAH] Sapu bersih duplikat. Kalau file path ini udah ada di memori, hapus dulu biar gak dobel
                             st.session_state.hasil_capture = [i for i in st.session_state.hasil_capture if i['path'] != filename]
