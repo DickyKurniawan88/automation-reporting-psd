@@ -314,7 +314,7 @@ if 'temp_parent_dir' not in st.session_state:
 # ==========================================
 
 # ---> FITUR BARU: POP-UP PANDUAN <---
-@st.dialog("📖 Panduan Penggunaan Robot")
+@st.dialog("📖 Panduan Penggunaan Sistem")
 def panduan_popup():
     # CSS Sakti buat ngilangin tombol 'X' (Close) bawaan Streamlit
     st.markdown("""
@@ -488,14 +488,16 @@ with st.sidebar:
             start_date = col1.date_input("Mulai", today)
             end_date = col2.date_input("Akhir", today)
             if st.checkbox("Gunakan Tanggal Ini"):
-                 root_name_zip = f"Laporan_Custom_{start_date}"
-                 configs.append({'label': 'custom_range', 'start': f"{start_date} 00:00:00", 'end': f"{end_date} 23:59:59"})
+                label_tanggal = f"{start_date}_sd_{end_date}"
+                root_name_zip = f"Laporan_Custom_{label_tanggal}"
+                configs.append({'label': f"Periode_{label_tanggal}", 'start': f"{start_date} 00:00:00", 'end': f"{end_date} 23:59:59"})
         else:
             col_y, col_m = st.columns(2)
             tahun = col_y.number_input("Tahun", value=today.year)
             bulan = col_m.number_input("Bulan", value=today.month, min_value=1, max_value=12)
             last_day = calendar.monthrange(tahun, bulan)[1]
-            root_name_zip = f"{get_indo_month_name(bulan)}_{tahun}"
+            nama_bulan = get_indo_month_name(bulan)
+            root_name_zip = f"{nama_bulan}_{tahun}"
             
             definitions = {
                 'Week 1': {'key': 'week1',   'start': f"{tahun}-{bulan:02d}-01 00:00:00", 'end': f"{tahun}-{bulan:02d}-07 23:59:59"},
@@ -505,21 +507,40 @@ with st.sidebar:
                 'Monthly': {'key': 'monthly', 'start': f"{tahun}-{bulan:02d}-01 00:00:00", 'end': f"{tahun}-{bulan:02d}-{last_day:02d} 23:59:59"},
             }
             if pilihan_mode == 'Full Batch (Week 1-4 & Monthly)':
+                root_name_zip = f"Full Monthly Report {nama_bulan} {tahun}"
                 for k, val in definitions.items(): configs.append({'label': val['key'], 'start': val['start'], 'end': val['end']})
             elif pilihan_mode == 'Single Preset':
                 pilih_satu = st.selectbox("Pilih Periode:", list(definitions.keys()))
+                if 'Week' in pilih_satu:
+                    root_name_zip = f"weekly report {pilih_satu} {nama_bulan} {tahun}"
+                else:
+                    root_name_zip = f"monthly report {nama_bulan} {tahun}"
                 configs.append({'label': definitions[pilih_satu]['key'], 'start': definitions[pilih_satu]['start'], 'end': definitions[pilih_satu]['end']})
             elif pilihan_mode == 'Multi Select':
-                for item in st.multiselect("Pilih Periode:", list(definitions.keys())): 
+                pilihan_multi = st.multiselect("Pilih Periode:", list(definitions.keys()))
+                if len(pilihan_multi) > 0:
+                    if 'Monthly' in pilihan_multi and len(pilihan_multi) == 1:
+                        root_name_zip = f"monthly report {nama_bulan} {tahun}"
+                    elif all('Week' in item for item in pilihan_multi):
+                        gabungan_week = "_".join(pilihan_multi)
+                        root_name_zip = f"weekly report {gabungan_week} {nama_bulan} {tahun}"
+                    else:
+                        root_name_zip = f"Laporan_Gabungan_{nama_bulan}_{tahun}"
+                for item in pilihan_multi: 
                     configs.append({'label': definitions[item]['key'], 'start': definitions[item]['start'], 'end': definitions[item]['end']})
 
         st.divider()
-        if st.button("🚀 JALANKAN ROBOT", type="primary", width="stretch"):
+        if st.button("🚀 MULAI EKSEKUSI SISTEM", type="primary", width="stretch"):
             if not configs: 
-                st.error("⚠️ Harap tentukan konfigurasi waktu!")
+                st.error("⚠️ Mohon tetapkan konfigurasi penjadwalan waktu terlebih dahulu.")
             elif len(st.session_state.df_selected) == 0: 
-                st.error("⚠️ Harap centang minimal 1 dashboard pada tabel di sebelah kanan!")
+                st.error("⚠️ Proses ditolak. Mohon tandai minimal 1 dokumen pada panel sumber data.")
             else:
+                st.session_state.hasil_capture = []
+                try: 
+                    shutil.rmtree(os.path.join(os.getcwd(), "DIREKTORI_CACHE_SEMENTARA"), ignore_errors=True)
+                except: pass
+                
                 st.session_state.configs = configs
                 st.session_state.root_name_zip = root_name_zip
                 # Kunci data yang sudah difilter centang untuk dieksekusi robot
@@ -535,7 +556,7 @@ with st.sidebar:
 #=================================================================================================================================================================
 with col_kiri:
     if st.session_state.status_aplikasi == "idle":
-        st.title("🤖 Automation Reporting (Playwright Engine)")
+        st.title("🤖 Sistem Automasi Pemantauan Ekstraksi Laporan Grafana")
         st.markdown("Dashboard ini menjalankan Reporting Grafana secara otomatis berdasarkan data di sebelah kanan.")
         st.divider()
         st.info("Pilih konfigurasi waktu di Sidebar, lalu klik **JALANKAN ROBOT**.")
@@ -553,15 +574,15 @@ with col_kiri:
                 st.session_state.status_aplikasi = "idle"; st.rerun()
 #----------------------------------------------------------------------------------
     elif st.session_state.status_aplikasi == "running":
-        st.title("🤖 Robot Sedang Bekerja...")
+        st.title("⚙️ Sistem Sedang Menjalankan Pemrosesan...")
         st.info("💡 **Engine:** Playwright Auto-Wait dengan Tab Management Memory Safe.")
-        if st.button("🔄 Layar Nyangkut? Klik Disini (Reset)", width="stretch"):
+        if st.button("🔄 Mulai Ulang Sistem (Reset Apabila Tidak Responsif)", width="stretch"):
             st.session_state.status_aplikasi = "idle"; st.rerun()
         st.divider()
         
         progress_bar = st.progress(0)
         info_waktu_ui = st.empty() 
-        status_text = st.status("Menyiapkan Sistem Playwright...", expanded=True)
+        status_text = st.status("Melakukan inisialisasi lingkungan virtual Playwright...", expanded=True)
         
         try:
             # ---> AMBIL LAGI INGATAN DARI SESSION STATE <---
@@ -607,7 +628,7 @@ with col_kiri:
                 tugas_berjalan = 0
                 waktu_mulai = time.time()
                 
-                status_text.write(f"⏳ Total antrean: {total_tugas_asli} Capture...")
+                status_text.write(f"⏳ Kalkulasi Antrean Ekstraksi: {total_tugas_asli} tugas terdaftar...")
                 
                 # Looping HANYA pada data yang sudah difilter/dicentang
                 for index, row in st.session_state.df_target.iterrows():
@@ -801,7 +822,7 @@ with col_kiri:
                 with c2:
                     st.write("") # Spacer
                     
-                    if st.button(f"🔄 Capture Ulang", key=f"btn_recapture_{idx}", width="stretch"):
+                    if st.button(f"🔄 Ekstraksi Ulang Dokumen", key=f"btn_recapture_{idx}", width="stretch"):
                         with st.spinner("Sedang mengambil ulang gambar..."):
                             sukses, msh_nodata = capture_ulang_single(item)
                             if sukses:
@@ -820,7 +841,7 @@ with col_kiri:
                                 st.error("Gagal capture ulang.")
                                 
                     # ---> TAMBAHAN TOMBOL ABAIKAN <---
-                    if st.button("✅ Abaikan (Terima Kosong)", key=f"btn_ignore_{idx}", width="stretch"):
+                    if st.button("✅ Abaikan (Teruskan No Data)", key=f"btn_ignore_{idx}", width="stretch"):
                         for i, d in enumerate(st.session_state.hasil_capture):
                             if d['path'] == item['path']:
                                 st.session_state.hasil_capture[i]['ada_no_data'] = False
@@ -831,11 +852,11 @@ with col_kiri:
 
 
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("✅ Lanjut Zip Semua File & Download", type="primary", width="stretch"):
+        if st.button("✅ Konfirmasi Selesai & Lanjutkan Kompresi", type="primary", width="stretch"):
             with st.spinner("Mengkompresi file ZIP..."):
                 zip_buffer = zip_folder_to_memory(st.session_state.base_output_dir)
-                st.session_state.zip_data = zip_buffer.getvalue() 
-                st.session_state.zip_name = "Laporan_Reporting.zip" 
+                st.session_state.zip_data = zip_buffer.getvalue()
+                st.session_state.zip_name = f"{st.session_state.root_name_zip}.zip" 
                 st.session_state.status_aplikasi = "selesai"
                 st.rerun()
 
@@ -844,7 +865,7 @@ with col_kiri:
         st.title("✅ Tugas Selesai!")
         st.divider()
         st.success("Semua dashboard berhasil di-capture dan siap diunduh!")
-        st.download_button("📥 Download Hasil Capture (ZIP)", data=st.session_state.zip_data, file_name=st.session_state.zip_name, mime="application/zip", width="stretch")
+        st.download_button("📥 Unduh Dokumen Laporan (ZIP)", data=st.session_state.zip_data, file_name=st.session_state.zip_name, mime="application/zip", width="stretch")
         st.markdown("<br>", unsafe_allow_html=True)
         
         if st.button("Kembali ke Beranda", width="stretch"):
