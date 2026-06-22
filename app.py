@@ -299,7 +299,7 @@ def capture_ulang_single(item):
 st.set_page_config(page_title="Automation Reporting Grafana", layout="wide")
 # ---> FITUR BARU: INJEKSI CSS TEMA PELINDO (FORCE LIGHT MODE) <---
 st.markdown("""
-    <style>
+<style>
         /* Memaksa background aplikasi menjadi putih bersih */
         .stApp {
             background-color: #FFFFFF !important;
@@ -313,30 +313,49 @@ st.markdown("""
         h1, h2, h3, h4, h5, h6, p, span, label {
             color: #004A77 !important;
         }
-        /* Styling Tombol Utama (Primary Button) - Pelindo Blue */
-        button[kind="primary"] {
+        
+        /* ========================================================
+           FIX: MENGATUR WARNA TEKS SPESIFIK DI DALAM TOMBOL
+           ======================================================== */
+           
+        /* 1. Styling Tombol Utama (Primary Button & Submit) - Background Pelindo Blue */
+        button[kind="primary"], button[data-testid="baseButton-primary"], button[type="submit"] {
             background-color: #0072B5 !important;
-            color: #FFFFFF !important;
             border: none !important;
             border-radius: 8px !important;
+        }
+        /* Paksa teks di dalam tombol UTAMA jadi PUTIH TERANG */
+        button[kind="primary"] p, button[kind="primary"] span, 
+        button[data-testid="baseButton-primary"] p, button[data-testid="baseButton-primary"] span, 
+        button[type="submit"] p, button[type="submit"] span {
+            color: #FFFFFF !important;
             font-weight: bold !important;
         }
-        button[kind="primary"]:hover {
+        /* Efek saat kursor diarahkan ke tombol utama */
+        button[kind="primary"]:hover, button[data-testid="baseButton-primary"]:hover, button[type="submit"]:hover {
             background-color: #004A77 !important;
         }
-        /* Styling Tombol Sekunder (Secondary Button) */
-        button[kind="secondary"] {
+
+        /* 2. Styling Tombol Sekunder (Secondary Button) - Background Putih */
+        button[kind="secondary"], button[data-testid="baseButton-secondary"] {
             background-color: #FFFFFF !important;
-            color: #0072B5 !important;
             border: 1px solid #0072B5 !important;
             border-radius: 8px !important;
+        }
+        /* Teks di tombol SEKUNDER tetap biru biar kelihatan di background putih */
+        button[kind="secondary"] p, button[kind="secondary"] span, 
+        button[data-testid="baseButton-secondary"] p, button[data-testid="baseButton-secondary"] span {
+            color: #0072B5 !important;
             font-weight: bold !important;
         }
-        button[kind="secondary"]:hover {
+        /* Efek saat kursor diarahkan ke tombol sekunder */
+        button[kind="secondary"]:hover, button[data-testid="baseButton-secondary"]:hover {
             background-color: #E6F0F7 !important;
-            color: #004A77 !important;
             border: 1px solid #004A77 !important;
         }
+        
+        /* ======================================================== */
+        
         /* Styling Expander agar elegan */
         [data-testid="stExpander"] {
             border: 1px solid #D0E2EF !important;
