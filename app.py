@@ -84,10 +84,10 @@ def update_ui_progress(start_time, tugas_selesai, total_tugas, ui_placeholder):
             eta_str = "Menghitung kecepatan..."
             
         teks_ui = f"""
-        <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; border-left: 5px solid #ff4b4b;">
-            <strong>⏱️ Waktu Berjalan:</strong> <span style="color:#ff4b4b; font-size:18px;">{format_waktu(elapsed)}</span> &nbsp; | &nbsp; 
-            <strong>⏳ Estimasi Selesai:</strong> <span style="color:#0068c9; font-size:18px;">{eta_str}</span><br>
-            <div style="margin-top: 8px;">📊 <strong>Progress:</strong> Selesai <strong>{tugas_selesai}</strong> dari <strong>{total_tugas}</strong> capture (Sisa: {sisa_tugas})</div>
+        <div style="background-color: #E6F0F7; padding: 15px; border-radius: 10px; border-left: 5px solid #0072B5;">
+            <strong style="color:#004A77;">⏱️ Waktu Berjalan:</strong> <span style="color:#0072B5; font-weight:bold; font-size:18px;">{format_waktu(elapsed)}</span> &nbsp; | &nbsp; 
+            <strong style="color:#004A77;">⏳ Estimasi Selesai:</strong> <span style="color:#0072B5; font-weight:bold; font-size:18px;">{eta_str}</span><br>
+            <div style="margin-top: 8px; color:#004A77;">📊 <strong>Progress:</strong> Selesai <strong>{tugas_selesai}</strong> dari <strong>{total_tugas}</strong> capture (Sisa: {sisa_tugas})</div>
         </div>
         """
         ui_placeholder.markdown(teks_ui, unsafe_allow_html=True)
@@ -297,6 +297,58 @@ def capture_ulang_single(item):
 #  INISIALISASI STATE UTAMA
 # ==========================================
 st.set_page_config(page_title="Automation Reporting Grafana", layout="wide")
+# ---> FITUR BARU: INJEKSI CSS TEMA PELINDO (FORCE LIGHT MODE) <---
+st.markdown("""
+    <style>
+        /* Memaksa background aplikasi menjadi putih bersih */
+        .stApp {
+            background-color: #FFFFFF !important;
+        }
+        /* Memaksa background Sidebar menjadi abu-abu super terang / kebiruan */
+        [data-testid="stSidebar"] {
+            background-color: #F4F7F9 !important;
+            border-right: 1px solid #D0E2EF !important;
+        }
+        /* Warna Teks dan Header menjadi Pelindo Dark Blue */
+        h1, h2, h3, h4, h5, h6, p, span, label {
+            color: #004A77 !important;
+        }
+        /* Styling Tombol Utama (Primary Button) - Pelindo Blue */
+        button[kind="primary"] {
+            background-color: #0072B5 !important;
+            color: #FFFFFF !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-weight: bold !important;
+        }
+        button[kind="primary"]:hover {
+            background-color: #004A77 !important;
+        }
+        /* Styling Tombol Sekunder (Secondary Button) */
+        button[kind="secondary"] {
+            background-color: #FFFFFF !important;
+            color: #0072B5 !important;
+            border: 1px solid #0072B5 !important;
+            border-radius: 8px !important;
+            font-weight: bold !important;
+        }
+        button[kind="secondary"]:hover {
+            background-color: #E6F0F7 !important;
+            color: #004A77 !important;
+            border: 1px solid #004A77 !important;
+        }
+        /* Styling Expander agar elegan */
+        [data-testid="stExpander"] {
+            border: 1px solid #D0E2EF !important;
+            border-radius: 8px !important;
+            background-color: #FFFFFF !important;
+        }
+        /* Sembunyikan elemen bawaan Streamlit agar terlihat seperti Web Pro */
+        #MainMenu {visibility: hidden;}
+        header {visibility: hidden;}
+        footer {visibility: hidden;}
+    </style>
+""", unsafe_allow_html=True)
 
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
@@ -430,7 +482,7 @@ with col_kanan:
         try:
             df = pd.read_excel(NAMA_FILE_EXCEL)
             
-            # ---> FIX ERROR: Bersihkan kolom 'Pilih' kalau terlanjur tersimpan di Excel <---
+            # Bersihkan kolom Pilih jika ada sisa cache dari Excel
             if 'Pilih' in df.columns:
                 df.drop(columns=['Pilih'], inplace=True)
                 
@@ -439,15 +491,13 @@ with col_kanan:
             
             st.success(f"✅ Terhubung: {NAMA_FILE_EXCEL}")
             
-            # ---> FITUR BARU: BIKIN 2 TAB BIAR RAPI <---
+            # Bikin 2 Tab Rapi
             tab_pilih, tab_kelola = st.tabs(["🚀 Eksekusi Laporan", "🗄️ Kelola Data Excel"])
             
-            # ======== TAB 1: PILIH DASHBOARD & EKSEKUSI ========
+            # TAB 1: Ekeskusi & Pilih Semua
             with tab_pilih:
-                # ---> FITUR BARU: TOMBOL PILIH SEMUA <---
+                # Tombol Pilih Semua
                 pilih_semua = st.checkbox("☑️ Centang Semua Dashboard", value=True)
-                
-                # Sekarang aman di-insert karena udah pasti nggak ada duplikat
                 df.insert(0, 'Pilih', pilih_semua) 
                 
                 with st.expander("🔍 Preview & Pilih Dashboard", expanded=True):
@@ -468,11 +518,10 @@ with col_kanan:
                 st.info(f"Total Terpilih: **{total_dash} Dashboard**")
                 st.session_state.df_selected = df_selected
 
-            # ======== TAB 2: MANAJEMEN EXCEL REALTIME ========
+            # TAB 2: Kelola Excel
             with tab_kelola:
-                st.markdown("<small>Edit teks, **tambah baris (scroll ke bawah tabel)**, atau klik baris lalu tekan tombol `Delete` di keyboard untuk menghapus. Klik simpan jika sudah selesai.</small>", unsafe_allow_html=True)
+                st.markdown("<small style='color:#004A77;'>Edit teks, <b>tambah baris (scroll ke bawah tabel)</b>, atau klik baris lalu tekan <code>Delete</code> di keyboard untuk menghapus. Klik simpan jika selesai.</small>", unsafe_allow_html=True)
                 
-                # Tampilkan tabel Excel FULL yang bisa diedit (buang kolom Pilih biar gak kesave ke Excel)
                 df_edit = st.data_editor(
                     df.drop(columns=['Pilih']), 
                     num_rows="dynamic", 
@@ -481,10 +530,9 @@ with col_kanan:
                 )
                 
                 if st.button("💾 Simpan Perubahan ke Excel", type="primary", use_container_width=True):
-                    # Tulis dan timpa file excel yang asli di server
                     df_edit.to_excel(NAMA_FILE_EXCEL, index=False)
-                    st.success("✅ Data Excel berhasil diperbarui! Halaman akan dimuat ulang...")
-                    time.sleep(1.5) # Jeda sedikit biar user bisa baca notifnya
+                    st.success("✅ Data Excel berhasil diperbarui! Memuat ulang sistem...")
+                    time.sleep(1.5) 
                     st.rerun()
 
         except Exception as e:
