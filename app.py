@@ -429,12 +429,16 @@ with col_kanan:
     if os.path.exists(NAMA_FILE_EXCEL):
         try:
             df = pd.read_excel(NAMA_FILE_EXCEL)
+            
+            # ---> FIX ERROR: Bersihkan kolom 'Pilih' kalau terlanjur tersimpan di Excel <---
+            if 'Pilih' in df.columns:
+                df.drop(columns=['Pilih'], inplace=True)
+                
             if 'Tinggi_Gambar' not in df.columns: df['Tinggi_Gambar'] = 0
             df = df.sort_values(by=['Provider', 'Kategori', 'Sub_Kategori'])
-            # ---> FITUR BARU: Tambahkan kolom Checkbox (default True/Kecentang semua)
-            df.insert(0, 'Pilih', True) 
             
             st.success(f"✅ Terhubung: {NAMA_FILE_EXCEL}")
+            
             # ---> FITUR BARU: BIKIN 2 TAB BIAR RAPI <---
             tab_pilih, tab_kelola = st.tabs(["🚀 Eksekusi Laporan", "🗄️ Kelola Data Excel"])
             
@@ -442,6 +446,8 @@ with col_kanan:
             with tab_pilih:
                 # ---> FITUR BARU: TOMBOL PILIH SEMUA <---
                 pilih_semua = st.checkbox("☑️ Centang Semua Dashboard", value=True)
+                
+                # Sekarang aman di-insert karena udah pasti nggak ada duplikat
                 df.insert(0, 'Pilih', pilih_semua) 
                 
                 with st.expander("🔍 Preview & Pilih Dashboard", expanded=True):
@@ -466,9 +472,9 @@ with col_kanan:
             with tab_kelola:
                 st.markdown("<small>Edit teks, **tambah baris (scroll ke bawah tabel)**, atau klik baris lalu tekan tombol `Delete` di keyboard untuk menghapus. Klik simpan jika sudah selesai.</small>", unsafe_allow_html=True)
                 
-                # Tampilkan tabel Excel FULL yang bisa diedit (num_rows="dynamic" bikin bisa nambah baris)
+                # Tampilkan tabel Excel FULL yang bisa diedit (buang kolom Pilih biar gak kesave ke Excel)
                 df_edit = st.data_editor(
-                    df.drop(columns=['Pilih']) if 'Pilih' in df.columns else df, 
+                    df.drop(columns=['Pilih']), 
                     num_rows="dynamic", 
                     use_container_width=True,
                     height=300
