@@ -435,31 +435,51 @@ with col_kanan:
             df.insert(0, 'Pilih', True) 
             
             st.success(f"✅ Terhubung: {NAMA_FILE_EXCEL}")
+            # ---> FITUR BARU: BIKIN 2 TAB BIAR RAPI <---
+            tab_pilih, tab_kelola = st.tabs(["🚀 Eksekusi Laporan", "🗄️ Kelola Data Excel"])
             
-            with st.expander("🔍 Preview & Pilih Dashboard", expanded=True):
-                # Tampilkan data editor agar tabel bisa diklik (hanya tampilkan 3 kolom agar rapi)
-                edited_df = st.data_editor(
-                    df[['Pilih', 'Provider', 'Nama_Dashboard']], 
-                    hide_index=True,
-                    column_config={
-                        "Pilih": st.column_config.CheckboxColumn("Pilih", default=True)
-                    },
-                    disabled=["Provider", "Nama_Dashboard"], # Kunci teks agar tidak bisa diedit admin
-                    use_container_width=True, 
+            # ======== TAB 1: PILIH DASHBOARD & EKSEKUSI ========
+            with tab_pilih:
+                # ---> FITUR BARU: TOMBOL PILIH SEMUA <---
+                pilih_semua = st.checkbox("☑️ Centang Semua Dashboard", value=True)
+                df.insert(0, 'Pilih', pilih_semua) 
+                
+                with st.expander("🔍 Preview & Pilih Dashboard", expanded=True):
+                    edited_df = st.data_editor(
+                        df[['Pilih', 'Provider', 'Nama_Dashboard']], 
+                        hide_index=True,
+                        column_config={
+                            "Pilih": st.column_config.CheckboxColumn("Pilih", default=pilih_semua)
+                        },
+                        disabled=["Provider", "Nama_Dashboard"], 
+                        use_container_width=True, 
+                        height=300
+                    )
+                
+                df['Pilih'] = edited_df['Pilih']
+                df_selected = df[df['Pilih'] == True]
+                total_dash = len(df_selected)
+                st.info(f"Total Terpilih: **{total_dash} Dashboard**")
+                st.session_state.df_selected = df_selected
+
+            # ======== TAB 2: MANAJEMEN EXCEL REALTIME ========
+            with tab_kelola:
+                st.markdown("<small>Edit teks, **tambah baris (scroll ke bawah tabel)**, atau klik baris lalu tekan tombol `Delete` di keyboard untuk menghapus. Klik simpan jika sudah selesai.</small>", unsafe_allow_html=True)
+                
+                # Tampilkan tabel Excel FULL yang bisa diedit (num_rows="dynamic" bikin bisa nambah baris)
+                df_edit = st.data_editor(
+                    df.drop(columns=['Pilih']) if 'Pilih' in df.columns else df, 
+                    num_rows="dynamic", 
+                    use_container_width=True,
                     height=300
                 )
-            
-            # Update status centangan ke memori utama
-            df['Pilih'] = edited_df['Pilih']
-            
-            # Saring! Hanya ambil baris yang dicentang (True)
-            df_selected = df[df['Pilih'] == True]
-            
-            total_dash = len(df_selected)
-            st.info(f"Total Terpilih: **{total_dash} Dashboard**")
-            
-            # Simpan data yang terpilih ke Session State agar bisa dibaca robot
-            st.session_state.df_selected = df_selected
+                
+                if st.button("💾 Simpan Perubahan ke Excel", type="primary", use_container_width=True):
+                    # Tulis dan timpa file excel yang asli di server
+                    df_edit.to_excel(NAMA_FILE_EXCEL, index=False)
+                    st.success("✅ Data Excel berhasil diperbarui! Halaman akan dimuat ulang...")
+                    time.sleep(1.5) # Jeda sedikit biar user bisa baca notifnya
+                    st.rerun()
 
         except Exception as e:
             st.error(f"File rusak/error: {e}")
@@ -467,6 +487,7 @@ with col_kanan:
     else:
         st.error(f"❌ File '{NAMA_FILE_EXCEL}' Tidak Ditemukan!")
         st.stop()
+            
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 with st.sidebar:
     img_path = os.path.join("Image", "LogoPerusahaan.png")
