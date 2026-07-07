@@ -4,7 +4,11 @@ import sys
 import streamlit as st
 import pandas as pd
 import os
-os.system("playwright install chromium")
+@st.cache_resource
+def install_playwright():
+    os.system("playwright install chromium")
+    
+install_playwright()
 import zipfile
 import re
 import calendar
@@ -184,7 +188,7 @@ def capture_ulang_single(item):
         with sync_playwright() as p:
             browser = p.chromium.launch_persistent_context(
                 user_data_dir=FOLDER_PROFILE, headless=True,
-                viewport={'width': 3840, 'height': 2160},
+                viewport={'width': 1920, 'height': 1080},
                 device_scale_factor=1,  # <--- FIX: UBAH ANGKA 2 JADI 1
                 args=["--disable-gpu", "--disable-dev-shm-usage"]
             )
