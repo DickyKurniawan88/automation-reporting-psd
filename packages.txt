@@ -8,5 +8,3 @@ libx11-xcb1
 libxcb-dri3-0
 libdrm2
 libxshmfence1
-libglib2.0-0
-libnss3-dev
