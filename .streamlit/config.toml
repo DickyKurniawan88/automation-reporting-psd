@@ -1,0 +1,15 @@
+[theme]
+# Memaksa aplikasi selalu dalam mode terang (Light Mode)
+base="light"
+
+# Warna utama untuk tombol (Primary Button) dan elemen aktif
+primaryColor="#0072B5"
+
+# Warna background utama aplikasi
+backgroundColor="#FFFFFF"
+
+# Warna background sekunder (untuk Sidebar dan kolom input)
+secondaryBackgroundColor="#F4F7F9"
+
+# Warna teks utama
+textColor="#004A77"
